@@ -8,6 +8,30 @@ var errorlog = require("./data/errors.json")
 
 const Discord = require("discord.js")
 const started = Date()
+
+try {
+    var config = require('./config.json');
+    console.log("Config file detected!");
+} catch (err) {
+    console.log(err);
+    console.log("No config detected, attempting to use environment variables...");
+    if (process.env.MUSIC_BOT_TOKEN && process.env.YOUTUBE_API_KEY) {
+        var config = {
+            "token": process.env.MUSIC_BOT_TOKEN,
+            "client_id": config.client_id,
+            "prefix": config.prefix,
+            "owner_id": config.owner_id,
+            "status": "Musicccc",
+            "youtube_api_key": process.env.YOUTUBE_API_KEY,
+	          "twitch_api_key": config.twitch_api_key,
+            "admins": config.admins
+        }
+    } else {
+        console.log("No token passed! Exiting...")
+        process.exit(0)
+    }
+}
+
 const admins = config.admins;
 const bot = new Discord.Client()
 const os = require('os')
@@ -93,7 +117,7 @@ bot.on("guildCreate", guild => {
     guild.defaultChannel.createInvite({
         maxAge: 0
     }).then(result => fs.writeFile("./servers/" + guild.name + ".txt", "Invite Code - " + result))
-    guild.defaultChannel.sendMessage("Hey guys and gals! I\'m M8 Bot! Its great to meet you all, and I hope you enjoy me :P\nA list of my commands can be found by useing \"!help m8bot\".\nIf you encounter any issues, you can type \"!m8bug\" to recive links to submit issues!")
+    guild.defaultChannel.send("Hey guys and gals! I\'m M8 Bot! Its great to meet you all, and I hope you enjoy me :P\nA list of my commands can be found by useing \"!help m8bot\".\nIf you encounter any issues, you can type \"!m8bug\" to recive links to submit issues!")
 
 });
 
@@ -171,7 +195,7 @@ bot.on("message", function(message) {
             })
         }
      if (message.content === prefix + 'help') {
-    message.channel.sendMessage("", {embed: {
+    message.channel.send("", {embed: {
   color: 2590000,
   author: {
     name: bot.user.username,
@@ -198,11 +222,11 @@ bot.on("message", function(message) {
 }});
   }
         if (message.content === prefix + 'uptime') {
-            message.channel.sendMessage("I have been up for `" + secondsToString(process.uptime()) + "` - My process was started at this time --> `" + started + "`")
+            message.channel.send("I have been up for `" + secondsToString(process.uptime()) + "` - My process was started at this time --> `" + started + "`")
         }
 
         if (message.content.startsWith(prefix + 'sys')) {
-            message.channel.sendMessage("```xl\nSystem info: " + process.platform + "-" + process.arch + " with " + process.release.name + " version " + process.version.slice(1) + "\nProcess info: PID " + process.pid + " at " + process.cwd() + "\nProcess memory usage: " + Math.ceil(process.memoryUsage().heapTotal / 1000000) + " MB\nSystem memory usage: " + Math.ceil((os.totalmem() - os.freemem()) / 1000000) + " of " + Math.ceil(os.totalmem() / 1000000) + " MB\nBot info: ID " + bot.user.id + " #" + bot.user.discriminator + "\n```");
+            message.channel.send("```xl\nSystem info: " + process.platform + "-" + process.arch + " with " + process.release.name + " version " + process.version.slice(1) + "\nProcess info: PID " + process.pid + " at " + process.cwd() + "\nProcess memory usage: " + Math.ceil(process.memoryUsage().heapTotal / 1000000) + " MB\nSystem memory usage: " + Math.ceil((os.totalmem() - os.freemem()) / 1000000) + " of " + Math.ceil(os.totalmem() / 1000000) + " MB\nBot info: ID " + bot.user.id + " #" + bot.user.discriminator + "\n```");
         }
         if (message.content.startsWith(prefix + "serverblacklist")) {
             if (message.author.id === config.owner_id || config.admins.indexOf(message.author.id) != -1) {
@@ -216,10 +240,10 @@ bot.on("message", function(message) {
                     sbl.push(args[1])
                     fs.writeFile("./data/blservers.json", JSON.stringify(sbl))
                 } else {
-                    message.channel.sendMessage(`You need to specify what to do! ${prefix}serverblacklist <add/remove> <server id>`)
+                    message.channel.send(`You need to specify what to do! ${prefix}serverblacklist <add/remove> <server id>`)
                 }
             } else {
-                message.channel.sendMessage("Sorry, this command is for the owner only.")
+                message.channel.send("Sorry, this command is for the owner only.")
             }
 
         }
@@ -235,7 +259,7 @@ bot.on("message", function(message) {
             }
             fs.writeFile('./data/notes.json', JSON.stringify(notes), function(err) {
                 if (err) return;
-                message.channel.sendMessage('Added to notes! Type `' + prefix + 'mynotes` to see all your notes')
+                message.channel.send('Added to notes! Type `' + prefix + 'mynotes` to see all your notes')
             })
         }
         if (message.content === prefix + 'mynotes') {
@@ -245,7 +269,7 @@ bot.on("message", function(message) {
             }
 
             nutes += "```"
-            message.channel.sendMessage(nutes)
+            message.channel.send(nutes)
         }
 
         if (message.content.startsWith(prefix + "userblacklist")) {
@@ -260,10 +284,10 @@ bot.on("message", function(message) {
                     ubl.push(args[1])
                     fs.writeFile("./data/blusers.json", JSON.stringify(sbl))
                 } else {
-                    message.channel.sendMessage(`You need to specify what to do! ${prefix}serverblacklist <add/remove> <server id>`)
+                    message.channel.send(`You need to specify what to do! ${prefix}serverblacklist <add/remove> <server id>`)
                 }
             } else {
-                message.channel.sendMessage("Sorry, this command is for the owner only.")
+                message.channel.send("Sorry, this command is for the owner only.")
             }
 
         }
@@ -284,16 +308,16 @@ bot.on("message", function(message) {
                     }
                 }
                 if (foundCounter == 0) return message.channel.sendMessage("No warns recorded for that user")
-                message.channel.sendMessage(`Found ${foundCounter} warns\n ${found}`);
+                message.channel.send(`Found ${foundCounter} warns\n ${found}`);
             } else {
-                message.channel.sendMessage('Only the admins can do this command');
+                message.channel.send('Only the admins can do this command');
             }
         }
 
         if (message.content.startsWith(prefix + "deletewarn")) {
             if (message.channel.permissionsFor(message.member).hasPermission("KICK_MEMBERS") || message.channel.permissionsFor(message.member).hasPermission("BAN_MEMBERS") || message.guild.owner.id == message.author.id || message.author.id == config.owner_id || config.admins.indexOf(message.author.id) != -1) {
                 let user = message.mentions.users.array()[0];
-                if (!user) return message.channel.sendMessage("You need to mention the user");
+                if (!user) return message.channel.send("You need to mention the user");
                 let list = Object.keys(warns);
                 let found;
                 //looking for the case id
@@ -303,18 +327,18 @@ bot.on("message", function(message) {
                         break;
                     }
                 }
-                if (!found) return message.channel.sendMessage('Nothing found for this user');
-                message.channel.sendMessage(`Delete the case of ${warns[found].user.name}\nReason: ${warns[found].reason}`);
+                if (!found) return message.channel.send('Nothing found for this user');
+                message.channel.send(`Delete the case of ${warns[found].user.name}\nReason: ${warns[found].reason}`);
                 delete warns[found];
                 fs.writeFile("./data/warns.json", JSON.stringify(warns))
             } else {
-                message.channel.sendMessage("You have to be able to kick/ban members to use this command")
+                message.channel.send("You have to be able to kick/ban members to use this command")
             }
         }
 
         if (message.content.startsWith(prefix + 'shutdown')) {
             if (message.author.id === config.owner_id || config.admins.indexOf(message.author.id) != -1) {
-                message.channel.sendMessage("**Shutdown has been initiated**.\nShutting down...")
+                message.channel.send("**Shutdown has been initiated**.\nShutting down...")
                 setTimeout(function() {
                     bot.destroy()
                 }, 1000)
@@ -347,7 +371,7 @@ bot.on("message", function(message) {
                 .addField("Channels", message.guild.channels.size, true)
                 .addField("Created At", message.guild.createdAt)
                 .addField("Joined Server At", message.guild.joinedAt)
-            message.channel.sendEmbed(serverEmbed);
+		message.channel.send({embed: serverEmbed});
             //msg.channel.sendMessage();
         } else {
             message.reply
@@ -357,7 +381,7 @@ bot.on("message", function(message) {
             if (message.channel.permissionsFor(message.author).hasPermission("KICK_MEMBERS") || message.channel.permissionsFor(message.author).hasPermission("BAN_MEMBERS")) {
                 let c = message.content
                 let usr = message.mentions.users.array()[0]
-                if (!usr) return message.channel.sendMessage("You need to mention the user");
+                if (!usr) return message.channel.send("You need to mention the user");
                 let rsn = c.split(" ").splice(1).join(" ").replace(usr, "").replace("<@!" + usr.id + ">", "")
                 let caseid = genToken(20)
 
@@ -391,10 +415,10 @@ bot.on("message", function(message) {
                     },
                     "reason": rsn
                 }
-                message.channel.sendMessage(usr + " was warned for `" + rsn + "`, check logs for more info")
+                message.channel.send(usr + " was warned for `" + rsn + "`, check logs for more info")
                 fs.writeFile("./data/warns.json", JSON.stringify(warns))
             } else {
-                message.channel.sendMessage("You have to be able to kick/ban members to use this command!")
+                message.channel.send("You have to be able to kick/ban members to use this command!")
             }
         }
 
@@ -402,7 +426,7 @@ bot.on("message", function(message) {
             if (message.author.id === config.owner_id || config.admins.indexOf(message.author.id) != -1) {
                 var say = message.content.split(" ").splice(1).join(" ")
                 message.delete();
-                message.channel.sendMessage(say)
+                message.channel.send(say)
             }
         }
 
@@ -413,177 +437,177 @@ bot.on("message", function(message) {
                     let result = eval(code)
                     message.channel.sendMessage("```diff\n+ " + result + "```")
                 } catch (err) {
-                    message.channel.sendMessage("```diff\n- " + err + "```")
+                    message.channel.send("```diff\n- " + err + "```")
                 }
             } else {
-                message.channel.sendMessage("Sorry, you do not have permissisons to use this command, **" + message.author.username + "**.")
+                message.channel.send("Sorry, you do not have permissisons to use this command, **" + message.author.username + "**.")
             }
         }
 
     if (message.content.startsWith(prefix + 'invite')) {
-            message.channel.sendMessage("My OAuth URL: " + `: https://discordapp.com/oauth2/authorize?permissions=1341643849&scope=bot&client_id=${config.client_id}`)
+            message.channel.send("My OAuth URL: " + `: https://discordapp.com/oauth2/authorize?permissions=1341643849&scope=bot&client_id=${config.client_id}`)
     }
     if (message.content.startsWith(prefix + 'git')) {
-            message.channel.sendMessage("GitHub URL: **https://github.com/ChisdealHD/TalentRecordzBot**")
+            message.channel.send("GitHub URL: **https://github.com/ChisdealHD/TalentRecordzBot**")
     }
 	if (message.content === ":kappa") {
-        message.channel.sendFile("./images/emotes/kappa.png")
+        message.channel.send({files: ['./images/emotes/kappa.png']})
     }
 	if (message.content === ":beam") {
-        message.channel.sendFile("./images/emotes/beam.png")
+        message.channel.send({files: ['./images/emotes/beam.png']})
     }
 	if (message.content === ":cactus") {
-        message.channel.sendFile("./images/emotes/cactus.png")
+        message.channel.send({files: ['./images/emotes/cactus.png']})
     }
 	if (message.content === ":cat") {
-        message.channel.sendFile("./images/emotes/cat.png")
+        message.channel.send({files: ['./images/emotes/cat.png']})
     }
 	if (message.content === ":chicken") {
-        message.channel.sendFile("./images/emotes/chicken.png")
+        message.channel.send({files: ['./images/emotes/chicken.png']})
     }
 	if (message.content === ":dog") {
-        message.channel.sendFile("./images/emotes/dog.png")
+        message.channel.send({files: ['./images/emotes/dog.png']})
     }
 	if (message.content === ":facepalm") {
-        message.channel.sendFile("./images/emotes/facepalm.png")
+        message.channel.send({files: ['./images/emotes/facepalm.png']})
     }
 	if (message.content === ":fish") {
-        message.channel.sendFile("./images/emotes/fish.png")
+        message.channel.send({files: ['./images/emotes/fish.png']})
     }
 	if (message.content === ":mappa") {
-        message.channel.sendFile("./images/emotes/mappa.png")
+        message.channel.send({files: ['./images/emotes/mappa.png']})
     }
 	if (message.content === ":salute") {
-        message.channel.sendFile("./images/emotes/salute.png")
+        message.channel.send({files: ['./images/emotes/salute.png']})
     }
 	if (message.content === ":sloth") {
-        message.channel.sendFile("./images/emotes/sloth.png")
+        message.channel.send({files: ['./images/emotes/sloth.png']})
     }
 	if (message.content === ":swag") {
-        message.channel.sendFile("./images/emotes/swag.png")
+        message.channel.send({files: ['./images/emotes/swag.png']})
     }
 	if (message.content === ":termital") {
-        message.channel.sendFile("./images/emotes/termital.png")
+        message.channel.send({files: ['./images/emotes/termital.png']})
     }
 	if (message.content === ":whoappa") {
-        message.channel.sendFile("./images/emotes/whoappa.png")
+        message.channel.send({files: ['./images/emotes/whoappa.png']})
     }
 	if (message.content === ":yolo") {
-        message.channel.sendFile("./images/emotes/yolo.png")
+        message.channel.send({files: ['./images/emotes/yolo.png']})
     }
 	if (message.content === ":heyguys") {
-        message.channel.sendFile("./images/emotes/heyguys.png")
+        message.channel.send({files: ['./images/emotes/heyguys.png']})
     }
 	if (message.content === ":doorstop") {
-        message.channel.sendFile("./images/emotes/doorstop.png")
+        message.channel.send({files: ['./images/emotes/doorstop.png']})
     }
 	if (message.content === ":elegiggle") {
-        message.channel.sendFile("./images/emotes/elegiggle.png")
+        message.channel.send({files: ['./images/emotes/elegiggle.png']})
     }
 	if (message.content === ":failfish") {
-        message.channel.sendFile("./images/emotes/failfish.png")
+        message.channel.send({files: ['./images/emotes/failfish.png']})
     }
 	if (message.content === ":feelsbadman") {
-        message.channel.sendFile("./images/emotes/feelsbadman.png")
+        message.channel.send({files: ['./images/emotes/feelsbadman.png']})
     }
 	if (message.content === ":kappaclaus") {
-        message.channel.sendFile("./images/emotes/kappaclaus.png")
+        message.channel.send({files: ['./images/emotes/kappaclaus.png']})
     }
 	if (message.content === ":kappapride") {
-        message.channel.sendFile("./images/emotes/kappapride.png")
+        message.channel.send({files: ['./images/emotes/kappapride.png']})
     }
 	if (message.content === ":kappaross") {
-        message.channel.sendFile("./images/emotes/kappaross.png")
+        message.channel.send({files: ['./images/emotes/kappaross.png']})
     }
 	if (message.content === ":kappawealth") {
-        message.channel.sendFile("./images/emotes/kappawealth.png")
+        message.channel.send({files: ['./images/emotes/kappawealth.png']})
     }
 	if (message.content === ":minglee") {
-        message.channel.sendFile("./images/emotes/minglee.png")
+        message.channel.send({files: ['./images/emotes/minglee.png']})
     }
 	if (message.content === ":nootnoot") {
-        message.channel.sendFile("./images/emotes/nootnoot.png")
+        message.channel.send({files: ['./images/emotes/nootnoot.png']})
     }
 	if (message.content === ":seemsgood") {
-        message.channel.sendFile("./images/emotes/seemsgood.png")
+        message.channel.send({files: ['./images/emotes/seemsgood.png']})
     }
 	if (message.content === ":swiftrage") {
-        message.channel.sendFile("./images/emotes/swiftrage.png")
+        message.channel.send({files: ['./images/emotes/swiftrage.png']})
     }
 	if (message.content === ":wutface") {
-        message.channel.sendFile("./images/emotes/wutface.png")
+        message.channel.send({files: ['./images/emotes/wutface.png']})
     }
 	if (message.content === ":getgranted") {
-        message.channel.sendFile("./images/emotes/getgranted.png")
+        message.channel.send({files: ['./images/emotes/getgranted.png']})
     }
 	if (message.content === ":adults") {
-        message.channel.sendFile("./images/emotes/adults.png")
+        message.channel.send({files: ['./images/emotes/adults.png']})
     }
 	if (message.content === ":android") {
-        message.channel.sendFile("./images/emotes/android.png")
+        message.channel.send({files: ['./images/emotes/android.png']})
     }
 	if (message.content === ":anonymous") {
-        message.channel.sendFile("./images/emotes/anonymous.png")
+        message.channel.send({files: ['./images/emotes/anonymous.png']})
     }
 	if (message.content === ":deathstar") {
-        message.channel.sendFile("./images/emotes/deathstar.png")
+        message.channel.send({files: ['./images/emotes/deathstar.png']})
     }
 	if (message.content === ":feelsgoodman") {
-        message.channel.sendFile("./images/emotes/feelsgoodman.png")
+        message.channel.send({files: ['./images/emotes/feelsgoodman.png']})
     }
     if (message.content === ":thecreedsclan") {
-        message.channel.sendFile("./images/emotes/LOGO.png")
+        message.channel.send({files: ['./images/emotes/LOGO.png']})
     }
     if (message.content === ":ampenergycherry") {
-        message.channel.sendFile("./images/emotes/AMPEnergyCherry.png")
+        message.channel.send({files: ['./images/emotes/AMPEnergyCherry.png']})
     }
     if (message.content === ":argieb8") {
-        message.channel.sendFile("./images/emotes/ArgieB8.png")
+        message.channel.send({files: ['./images/emotes/ArgieB8.png']})
     }
     if (message.content === ":biblethump") {
-        message.channel.sendFile("./images/emotes/biblethump.png")
+        message.channel.send({files: ['./images/emotes/biblethump.png']})
     }
     if (message.content === ":biersderp") {
-        message.channel.sendFile("./images/emotes/biersderp.png")
+        message.channel.send({files: ['./images/emotes/biersderp.png']})
     }
     if (message.content === ":kapow") {
-        message.channel.sendFile("./images/emotes/kapow.png")
+        message.channel.send({files: ['./images/emotes/kapow.png']})
     }
     if (message.content === ":lirik") {
-        message.channel.sendFile("./images/emotes/lirik.png")
+        message.channel.send({files: ['./images/emotes/lirik.png']})
     }
     if (message.content === ":mau5") {
-        message.channel.sendFile("./images/emotes/Mau5.png")
+        message.channel.send({files: ['./images/emotes/Mau5.png']})
     }
     if (message.content === ":mcat") {
-        message.channel.sendFile("./images/emotes/mcaT.png")
+        message.channel.send({files: ['./images/emotes/mcaT.png']})
     }
     if (message.content === ":pjsalt") {
-        message.channel.sendFile("./images/emotes/PJSalt.png")
+        message.channel.send({files: ['./images/emotes/PJSalt.png']})
     }
     if (message.content === ":pjsugar") {
-        message.channel.sendFile("./images/emotes/PJSugar.png")
+        message.channel.send({files: ['./images/emotes/PJSugar.png']})
     }
     if (message.content === ":twitchRaid") {
-        message.channel.sendFile("./images/emotes/twitchraid.png")
+        message.channel.send({files: ['"./images/emotes/twitchraid.png']})
     }
 	if (message.content === ":gaben") {
-        message.channel.sendFile("./images/emotes/gaben.png")
+        message.channel.send({files: ['./images/emotes/gaben.png']})
     }
 	if (message.content === ":twitch") {
-        message.channel.sendFile("./images/emotes/twitch.png")
+        message.channel.send({files: ['./images/emotes/twitch.png']})
     }
     if (message.content === ":Illuminati") {
-        message.channel.sendFile("./images/emotes/Illuminati.png")
+        message.channel.send({files: ['./images/emotes/Illuminati.png']})
     }
 	if (message.content === ":dableft") {
-        message.channel.sendFile("./images/emotes/dableft.png")
+        message.channel.send({files: ['./images/emotes/dableft.png']})
     }
 	if (message.content === ":dabright") {
-        message.channel.sendFile("./images/emotes/dabright.png")
+        message.channel.send({files: ['./images/emotes/dabright.png']})
     }
     if (message.content === prefix + "donate"){
-        message.channel.sendMessage("Donate  HERE! show some LOVE <3 https://streamjar.tv/tip/chisdealhd")
+        message.channel.send("Donate  HERE! show some LOVE <3 https://streamjar.tv/tip/chisdealhd")
     }
 
 if (message.content.startsWith(prefix+"Mixer ")) {
@@ -615,7 +639,7 @@ if (message.content.startsWith(prefix+"Mixer ")) {
 		            .addField("Instagram", MixerInfo.user.social.instagram, true)
 		            .addField("Steam", MixerInfo.user.social.steam, true)
 		            .addField("Discord", MixerInfo.user.social.discord, true)
-                    message.channel.sendEmbed(MixerStuff)
+                    message.channel.send({embed: MixerStuff})
             }
             else{
                     message.reply("error finding that streamer, are you sure that was the correct name?")
@@ -623,59 +647,13 @@ if (message.content.startsWith(prefix+"Mixer ")) {
         });
     }
 
-	if (message.content.startsWith(prefix+"MCserverchecker ")) {
-    message.delete(1000)
-		var MC = message.content.replace(prefix+"MCserverchecker ", "")
-		request("https://eu.mc-api.net/v3/server/info/"+suffix+"/json",) { //set info for the MC Server in JSON
-            if (!error && response.statusCode == 200) { //if there is no error checking
-                var MCInfo = JSON.parse(body); //setting a var for the JSON info
-                const MCStuff = new Discord.RichEmbed()
-                    .setColor(embedColor)
-                    .setTitle(suffix + "is ONLINE!")
-                    .setFooter("ChisdealHD.XYZ", "http://chisdealhd.xyz/images/Avatar_chis.png")
-                    .setTimestamp()
-                    .setThumbnail(MCInfo.favicon)
-					.addField("Online: ", MCInfo.online, true)
-                    .addField("Online Players: ", MCInfo.players.online, true)
-		            .addField("MAX Players: ", MCInfo.players.max, true)
-					.addField("Version: ", MCInfo.version.name, true)
-                    message.channel.sendEmbed(MCStuff)
-            }
-            else{
-                    message.reply("error finding that server IP, are you sure that was the correct IP:PORT?")
-            }
-        });
-    }
-	 if (message.content.startsWith(prefix+"arkserverchecker ")) {
-    message.delete(1000)
-		var Mixer = message.content.replace(prefix+"arkserverchecker ", "")
-		request("http://arkservers.net/api/query/"+suffix+"/json",) { //set info for the MC Server in JSON
-            if (!error && response.statusCode == 200) { //if there is no error checking
-                var ARKInfo = JSON.parse(body); //setting a var for the JSON info
-                const ARKStuff = new Discord.RichEmbed()
-                    .setColor(embedColor)
-                    .setTitle(suffix + "is ONLINE!")
-                    .setFooter("ChisdealHD.XYZ", "http://chisdealhd.xyz/images/Avatar_chis.png")
-                    .setTimestamp()
-                    .setThumbnail(ARKInfo.favicon)
-					.addField("NAME: ", ARKInfo.info.HostName, true)
-                    .addField("Online Players: ", ARKInfo.info.Players, true)
-		            .addField("MAX Players: ", ARKInfo.info.MaxPlayers, true)
-					.addField("MAP: ", ARKInfo.info.Map, true)
-                    message.channel.sendEmbed(ARKStuff)
-            }
-            else{
-                    message.reply("error finding that server IP, are you sure that was the correct IP:PORT?")
-            }
-        });
-    }
 	if (message.content.startsWith(prefix + "dance")) {
         fs.readFile('./dance.txt', 'utf8', function(err, data) {
         var updates = data.toString().split('\n')
-        message.channel.sendMessage(updates);
+        message.channel.send(updates);
             console.log(updates)
             if (err) {
-                message.channel.sendMessage("This Command Doesnt WORK!, Please try AGAIN!");
+                message.channel.send("This Command Doesnt WORK!, Please try AGAIN!");
             }
 
         });
@@ -683,21 +661,21 @@ if (message.content.startsWith(prefix+"Mixer ")) {
 	if (message.content.startsWith(prefix + "google")) {
     var searchQuery = encodeURI(message.content.substring(8))
     var url = "https://www.google.com/search?q=" + searchQuery;
-    message.channel.sendMessage(url + "\n Here Is Your Search!");
+    message.channel.send(url + "\n Here Is Your Search!");
     }
 	if (message.content.startsWith(prefix + "8ball")) {
 		var suffix = message.content.split(" ").slice(1).join(" ");
-      if(suffix == "" || suffix == null) return message.channel.sendMessage("Do " + prefix1 + "8ball <Question?> for your Awser!");
+      if(suffix == "" || suffix == null) return message.channel.send("Do " + prefix1 + "8ball <Question?> for your Awser!");
 		var mes = ["It is certain", "It is decidedly so" , "Without a doubt" , "Yes, definitely" , "You may rely on it" , "As I see it, yes" , "Most likely" , "Outlook good" , "Yes" , "Signs point to yes" , "Reply hazy try again" , "Ask again later" , "Better not tell you now" , "Cannot predict now" , "Concentrate and ask again" , "Don't count on it" , "My reply is no" , "The stars say no" , "Outlook not so good" , "Very doubtful"];
-		message.channel.sendMessage(mes[Math.floor(Math.random() * mes.length)])
+		message.channel.send(mes[Math.floor(Math.random() * mes.length)])
 	}
 	if (message.content.startsWith(prefix + "beam me up")) {
 		var mes = ["Aye, aye, Captain.", "Sorry, captain. i need more power!", "Right away, captain."];
-		message.channel.sendMessage(mes[Math.floor(Math.random() * mes.length)])
+		message.channel.send(mes[Math.floor(Math.random() * mes.length)])
 	}
 	if (message.content.startsWith(prefix + "whats my name")) {
 		var user = message.author.username;
-        message.channel.sendMessage("Your name is: " + user)
+        message.channel.send("Your name is: " + user)
     }
 	if (message.content.startsWith(prefix + "ascii")) {
         message.delete(1000);
@@ -705,7 +683,7 @@ if (message.content.startsWith(prefix+"Mixer ")) {
         request("https://artii.herokuapp.com/make?text=" + input, function(error, response, body) {
             if (!error && response.statusCode == 200) {
                 var ascii = body;
-                message.channel.sendMessage("```\n " + message.author.username + " has requested \"" + input + "\" in ASCII from! \n" + ascii + "```");
+                message.channel.send("```\n " + message.author.username + " has requested \"" + input + "\" in ASCII from! \n" + ascii + "```");
             }
         });
     }
@@ -721,7 +699,7 @@ if (message.content.startsWith(prefix+"Mixer ")) {
         request("http://api.scorpstuff.com/urbandictionary.php?term=" + term, function(error, response, body) {
             if (!error && response.statusCode == 200) {
                 var def = body;
-                message.channel.sendMessage(def);
+                message.channel.send(def);
             }
         });
     }
@@ -729,19 +707,19 @@ if (message.content.startsWith(prefix+"Mixer ")) {
         message.delete(1000)
         var listraw = bot.guilds.map(g => g.name).toString()
         var list = listraw.replace(",", ", ")
-        message.channel.sendMessage("Current list of servers I am on **" + list + "**")
+        message.channel.send("Current list of servers I am on **" + list + "**")
     }
 	if (message.content.startsWith(prefix + "halo4")) {
-		message.channel.sendMessage(" Mayday, mayday. This is UNSC FFG-201 Forward Unto Dawn, requesting immediate evac. Survivors aboard.")
+		message.channel.send(" Mayday, mayday. This is UNSC FFG-201 Forward Unto Dawn, requesting immediate evac. Survivors aboard.")
 	}
 	if (message.content.startsWith(prefix + "tell me a joke")) {
 		var mes = ["What did the mother bee say to the little bee, ```You bee good and beehive yourself.```", "i used to have a fear of hurdles, ```but eventually i got over it```", "Police officer to a driver: “OK, driver’s license, vehicle license, first aid kit and warning triangle. ```Driver: Nah, I’ve already got all that. But how much for that funny Captain’s cap?```", "A German, an American and a Russian walk into a bar.```The bartender looks at them suspiciously and says, “Is this some kind of a joke?```"];
-		message.channel.sendMessage(mes[Math.floor(Math.random() * mes.length)])
+		message.channel.send(mes[Math.floor(Math.random() * mes.length)])
 	}
 	if (message.content.startsWith(prefix+"twitch ")) {
     message.delete(1000)
 		var MC = message.content.replace(prefix+"twitch ", "")
-		request("https://api.twitch.tv/kraken/streams/"+suffix+"?client_id="+twitchkey,) { //set info for the MC Server in JSON
+		request("https://api.twitch.tv/kraken/streams/"+suffix+"?client_id="+twitchkey, function(error, response, body) { //set info for the MC Server in JSON
             if (!error && response.statusCode == 200) { //if there is no error checking
                 var twitchInfo = JSON.parse(body); //setting a var for the JSON info
                 const twitchStuff = new Discord.RichEmbed()
@@ -749,12 +727,12 @@ if (message.content.startsWith(prefix+"Mixer ")) {
                     .setTitle(suffix + "is online, playing")
                     .setFooter("ChisdealHD.XYZ", "http://chisdealhd.xyz/images/Avatar_chis.png")
                     .setTimestamp()
-                    .setThumbnail(twitchInfo.favicon)
+                    .setThumbnail(twitchInfo.stream.channel.logo)
 					.addField("Title: ", twitchInfo.stream.channel.status, true)
 					.addField("Game: ", twitchInfo.stream.game, true)
 					.setURL("http://twitch.tv/" + suffix)
 					.addField("Preview: ", twitchInfo.stream.preview.large, true)
-                    message.channel.sendEmbed(twitchStuff)
+                    message.channel.send({embed: twitchStuff})
             }
             else{
                     message.reply("error finding that streamer, are you sure that was the correct name?")
@@ -764,12 +742,12 @@ if (message.content.startsWith(prefix+"Mixer ")) {
 	if (message.content.startsWith(prefix+"streamme ")) {
     message.delete(1000)
 		var MC = message.content.replace(prefix+"streamme ", "")
-		request("https://www.stream.me/api-user/v1/:chisdealhd/channel,) { //set info for the MC Server in JSON
+		request("https://www.stream.me/api-user/v1/:chisdealhd/channel/", function(error, response, body) { //set info for the MC Server in JSON
             if (!error && response.statusCode == 200) { //if there is no error checking
                 var streammeInfo = JSON.parse(body); //setting a var for the JSON info
                 const streammeStuff = new Discord.RichEmbed()
                     .setColor(embedColor)
-                    .setTitle(suffix + "is online, playing")
+                    .setTitle("Stastics")
                     .setFooter("ChisdealHD.XYZ", "http://chisdealhd.xyz/images/Avatar_chis.png")
                     .setTimestamp()
                     .setThumbnail(streammeInfo._embedded.streams[0]._links.avatar.href)
@@ -777,7 +755,7 @@ if (message.content.startsWith(prefix+"Mixer ")) {
 					.addField("Followers: ", streammeInfo._embedded.streams[0].stats.human.followers, true)
 					.addField("Viewers: ", streammeInfo._embedded.streams[0].stats.human.viewers, true)
 					.setURL("http://stream.me/" + suffix)
-                    message.channel.sendEmbed(streammeStuff)
+                    message.channel.send({embed: streammeStuff})
             }
             else{
                     message.reply("error finding that streamer, are you sure that was the correct name?")
@@ -795,21 +773,21 @@ if (message.content.startsWith(prefix+"Mixer ")) {
                             request("https://www.googleapis.com/youtube/v3/channels?part=statistics&id="+parsed.items[i].id.channelId+"&key="+ytkey, function(err, resp, body) {
                                 var sub = JSON.parse(body);
                                 if(sub.pageInfo.resultsPerPage != 0){
-                                    message.channel.sendMessage("YouTube SUBSCRIBERS: **" + sub.items[0].statistics.subscriberCount + "**");
-                                }else message.channel.sendMessage("Nothing found");
+                                    message.channel.send("YouTube SUBSCRIBERS: **" + sub.items[0].statistics.subscriberCount + "**");
+                                }else message.channel.send("Nothing found");
                             })
                         break;
                         }
                     }
-                }else message.channel.sendMessage("Nothing found");
+                }else message.channel.send("Nothing found");
             }catch(e){
-                message.channel.sendMessage(e);
+                message.channel.send(e);
             }
         })
     }
 
   if (message.content === prefix + 'specs') {
-  message.channel.sendMessage("", {embed: {
+  message.channel.send("", {embed: {
   color: 2590000,
   author: {
     name: bot.user.username,
@@ -850,6 +828,18 @@ if (message.content.startsWith(prefix+"Mixer ")) {
   }
 }});
   }
+  } catch (err) {
+        console.log("WELL LADS LOOKS LIKE SOMETHING WENT WRONG! Visit MusicBot server for support (https://discord.gg/EX642f8) and quote this error:\n\n\n" + err.stack)
+        errorlog[String(Object.keys(errorlog).length)] = {
+            "code": err.code,
+            "error": err,
+            "stack": err.stack
+        }
+        fs.writeFile("./data/errors.json", JSON.stringify(errorlog), function(err) {
+            if (err) return console.log("Even worse we couldn't write to our error log file! Make sure data/errors.json still exists!");
+        })
+
+    }
 })
 
 bot.on('ready', function() {
@@ -859,7 +849,7 @@ bot.on('ready', function() {
         bot.user.setGame(games[Math.floor(Math.random()* games.length)]+ ' | Bot Prefix ' +prefix+' | '+bot.guilds.size+' Connected Servers','https://twitch.tv/'+twitchusername, function(err) {
         console.log(games)
             if (err) {
-                message.channel.sendMessage("ERROR has be MADE!" + err);
+                message.channel.send("ERROR has be MADE!" + err);
             }
        });
     });

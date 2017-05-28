@@ -3,9 +3,7 @@
   "client_id": "BotID",
   "prefix": "Prefix",
   "owner_id": "OwnerID",
-  "youtube_api_key": "YoutubeAPI",
   "twitch_api_key": "TwitchclientID",
   "twitchusername": "Usernamefortwitch",
-  "admins": ["UserID", "UserID", "UserID", "UserID", "UserID"],
-  "server_port":"Port"
+  "admins": ["UserID", "UserID", "UserID", "UserID", "UserID"]
 }
