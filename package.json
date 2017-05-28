@@ -1,0 +1,37 @@
+{
+	"name": "ChisdealHD BOT!",
+	"version": "1.0.0",
+	"description": "A simple node.js discord bot",
+	"main": "bot.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com:ChisdealHD/TalentRecordzBot.git"
+	},
+	"keywords": [
+		"music",
+		"bot",
+		"discord",
+		"node.js",
+		"npm",
+		"ytdl"
+	],
+	"author": "ChisdealHD",
+	"contributors": "",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/ChisdealHD/TalentRecordzBot/issues"
+	},
+	"homepage": "https://github.com/ChisdealHD/TalentRecordzBot#readme",
+	"dependencies": {
+		"discord.js": "github:hydrabolt/discord.js",
+		"mathjs": "^3.5.3",
+		"cheerio": "^0.22.0",
+		"request": "^2.79.0",
+		"stringformat": "^0.0.5",
+		"morgan": "^1.7.0",
+		"markdown": "^0.5.0"
+	}
+}
